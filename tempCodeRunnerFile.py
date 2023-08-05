@@ -1,2 +1,0 @@
-of True: {}, No. False: {}".format(Train['hazardous'].sum(), len(Train) -Train['hazardous'].sum()))
-# print("Test Dataset: No of True: {}, No. False: {}".format(Test['hazardous'].sum(), len(Test) -Test['hazardous'].sum()))
