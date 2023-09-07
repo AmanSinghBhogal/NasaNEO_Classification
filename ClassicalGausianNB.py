@@ -1,1 +1,78 @@
 # In this code we use Classical Computing Gaussian Naive Bayes Algorithm on Nasa Nearst Earth Object Data Set
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder, MinMaxScaler
+import statistics as st
+import math
+
+# Loaded the Dataset
+data = pd.read_csv  ('neo_v2.csv')
+
+# Lets drop unwated attributes such as Orbiting Body and Name
+data = data.drop("orbiting_body", axis = 1)
+data = data.drop("name", axis = 1)
+data = data.drop("sentry_object", axis = 1)
+
+# input_labels = data['hazardous']
+# input_data = data.drop("hazardous", axis = 1)
+
+# Splitted the Dataset into Training and Testing
+train_input, test_input = train_test_split(data, test_size=0.3, random_state=0)
+
+# Printing the Number of True and False Records in Train and Test Dataset
+print("Train Dataset: No of True: {}, No. False: {}".format(len(train_input[train_input['hazardous'] == True]), len(train_input[train_input['hazardous'] == False])))
+print("Test Dataset: No of True: {}, No. False: {}".format(len(test_input[test_input['hazardous'] == True]), len(test_input[test_input['hazardous'] == False])))
+
+# Printing Number of records in training and testing
+print("There are {} Training Records and {} Testing Records".format(train_input.shape[0], test_input.shape[0]))
+
+# Calculating Probability of Hazardious true And false
+p_hazard_true = len(train_input[train_input['hazardous'] == True])/len(train_input)
+p_hazard_false = len(train_input[train_input['hazardous'] == False])/len(train_input)
+
+# Printing the target class probility
+print("P[True]: {:.3f}".format(p_hazard_true))
+print("P[False]: {:.3f}".format(p_hazard_false))
+
+# Calculating probabilities for Hazardous = True
+row1 = ['True']
+# Calculating Mean and variance for est_diameter_min for hazardous = true
+row1.append(st.mean(train_input[train_input['hazardous'] == True]['est_diameter_min']))
+row1.append(st.variance(train_input[train_input['hazardous'] == True]['est_diameter_min']))
+row1.append(st.mean(train_input[train_input['hazardous'] == True]['est_diameter_max']))
+row1.append(st.variance(train_input[train_input['hazardous'] == True]['est_diameter_max']))
+row1.append(st.mean(train_input[train_input['hazardous'] == True]['relative_velocity']))
+row1.append(st.variance(train_input[train_input['hazardous'] == True]['relative_velocity']))
+row1.append(st.mean(train_input[train_input['hazardous'] == True]['miss_distance']))
+row1.append(st.variance(train_input[train_input['hazardous'] == True]['miss_distance']))
+row1.append(st.mean(train_input[train_input['hazardous'] == True]['absolute_magnitude']))
+row1.append(st.variance(train_input[train_input['hazardous'] == True]['absolute_magnitude']))
+
+# Calculating Probabilities for Hazardous = False
+row2 = ['False']
+# Calculating Mean and variance for est_diameter_min for hazardous = true
+row2.append(st.mean(train_input[train_input['hazardous'] == False]['est_diameter_min']))
+row2.append(st.variance(train_input[train_input['hazardous'] == False]['est_diameter_min']))
+row2.append(st.mean(train_input[train_input['hazardous'] == False]['est_diameter_max']))
+row2.append(st.variance(train_input[train_input['hazardous'] == False]['est_diameter_max']))
+row2.append(st.mean(train_input[train_input['hazardous'] == False]['relative_velocity']))
+row2.append(st.variance(train_input[train_input['hazardous'] == False]['relative_velocity']))
+row2.append(st.mean(train_input[train_input['hazardous'] == False]['miss_distance']))
+row2.append(st.variance(train_input[train_input['hazardous'] == False]['miss_distance']))
+row2.append(st.mean(train_input[train_input['hazardous'] == False]['absolute_magnitude']))
+row2.append(st.variance(train_input[train_input['hazardous'] == False]['absolute_magnitude']))
+
+calculated_fields = pd.DataFrame([row1,row2], columns= ['harzardous','Mean_est_diameter_min','Var_est_diameter_min', 'Mean_est_diameter_max','Var_est_diameter_max', 'Mean_relative_velocity','Var_relative_velocity', 'Mean_miss_distance', 'Var_miss_distance', 'Mean_absolute_magnitude', 'Var_absolute_magnitude'])
+
+# Saving the Calculated fields to get a better view
+calculated_fields.to_csv('calculated_fields.csv')
+
+# Calculating Posterior Probability Function F(x) = (1/2πσ2)e(-(x-x̄)/2σ2)
+def post_prob(mean, var, input_x):
+    return ((1/math.sqrt(2*np.pi*var))*math.exp((-1*((input_x-mean)**2))/(2*var)))
+
+# Writing the Estimation function:
+def cnb(input):
+    # Post_T = (p_hazard_true*def()*)
+    return 0
