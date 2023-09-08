@@ -2,7 +2,6 @@
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelEncoder, MinMaxScaler
 import statistics as st
 import math
 
@@ -14,11 +13,11 @@ data = data.drop("orbiting_body", axis = 1)
 data = data.drop("name", axis = 1)
 data = data.drop("sentry_object", axis = 1)
 
-# input_labels = data['hazardous']
+# input_labels = data['hazardous'] 
 # input_data = data.drop("hazardous", axis = 1)
 
 # Splitted the Dataset into Training and Testing
-train_input, test_input = train_test_split(data, test_size=0.3, random_state=0)
+train_input, test_input = train_test_split(data, test_size=0.3, random_state=43)
 
 # Printing the Number of True and False Records in Train and Test Dataset
 print("Train Dataset: No of True: {}, No. False: {}".format(len(train_input[train_input['hazardous'] == True]), len(train_input[train_input['hazardous'] == False])))
@@ -36,7 +35,7 @@ print("P[True]: {:.3f}".format(p_hazard_true))
 print("P[False]: {:.3f}".format(p_hazard_false))
 
 # Calculating probabilities for Hazardous = True
-row1 = ['True']
+row1 = []
 # Calculating Mean and variance for est_diameter_min for hazardous = true
 row1.append(st.mean(train_input[train_input['hazardous'] == True]['est_diameter_min']))
 row1.append(st.variance(train_input[train_input['hazardous'] == True]['est_diameter_min']))
@@ -50,7 +49,7 @@ row1.append(st.mean(train_input[train_input['hazardous'] == True]['absolute_magn
 row1.append(st.variance(train_input[train_input['hazardous'] == True]['absolute_magnitude']))
 
 # Calculating Probabilities for Hazardous = False
-row2 = ['False']
+row2 = []
 # Calculating Mean and variance for est_diameter_min for hazardous = true
 row2.append(st.mean(train_input[train_input['hazardous'] == False]['est_diameter_min']))
 row2.append(st.variance(train_input[train_input['hazardous'] == False]['est_diameter_min']))
@@ -63,16 +62,50 @@ row2.append(st.variance(train_input[train_input['hazardous'] == False]['miss_dis
 row2.append(st.mean(train_input[train_input['hazardous'] == False]['absolute_magnitude']))
 row2.append(st.variance(train_input[train_input['hazardous'] == False]['absolute_magnitude']))
 
-calculated_fields = pd.DataFrame([row1,row2], columns= ['harzardous','Mean_est_diameter_min','Var_est_diameter_min', 'Mean_est_diameter_max','Var_est_diameter_max', 'Mean_relative_velocity','Var_relative_velocity', 'Mean_miss_distance', 'Var_miss_distance', 'Mean_absolute_magnitude', 'Var_absolute_magnitude'])
+calculated_fields = pd.DataFrame([row1,row2], columns= ['Mean_est_diameter_min','Var_est_diameter_min', 'Mean_est_diameter_max','Var_est_diameter_max', 'Mean_relative_velocity','Var_relative_velocity', 'Mean_miss_distance', 'Var_miss_distance', 'Mean_absolute_magnitude', 'Var_absolute_magnitude'])
 
 # Saving the Calculated fields to get a better view
 calculated_fields.to_csv('calculated_fields.csv')
 
 # Calculating Posterior Probability Function F(x) = (1/2πσ2)e(-(x-x̄)/2σ2)
 def post_prob(mean, var, input_x):
-    return ((1/math.sqrt(2*np.pi*var))*math.exp((-1*((input_x-mean)**2))/(2*var)))
+    return ((1.0/math.sqrt(2.0*np.pi*var))*math.exp((-1.0*((input_x-mean)**2.0))/(2.0*var)))
+
+# df.iloc[row, column]
+# print(calculated_fields.iloc[0,1])
+
 
 # Writing the Estimation function:
 def cnb(input):
     # Post_T = (p_hazard_true*def()*)
-    return 0
+    Post_T = p_hazard_true
+    Post_F = p_hazard_false
+    # print("For Hazardous = True")
+    # Calculating Posterior Probability for Hazardous = True
+    for i in range(len(input)):
+        t1 = i*2
+        t2 = t1+1
+        val = post_prob(calculated_fields.iloc[0,t1],calculated_fields.iloc[0,t2], input[i])
+        # print(val)
+        # print("Post_T: {}".format(Post_T))
+        Post_T *= val
+    
+    # print("For hazardous = False")
+    # Calculating Posterior Probability for Hazardous = False
+    for i in range(len(input)):
+        t1 = i*2
+        t2 = t1+1
+        val = post_prob(calculated_fields.iloc[1,t1],calculated_fields.iloc[1,t2], input[i])
+        # print(val)
+        # print("Post_F: {}".format(Post_F))
+        Post_F *= val
+    
+    print("Posterior Probability for Hazardous = True is: {}".format(Post_T))
+    print("Posterior Probability for Hazardous = False is: {}".format(Post_F))
+
+    if Post_T > Post_F:
+        return True
+    else:
+        return False
+    
+    
