@@ -3,7 +3,9 @@ import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
 import statistics as st
+from sklearn.metrics import recall_score, precision_score, confusion_matrix
 import math
+import seaborn as samandar
 
 # Loaded the Dataset
 data = pd.read_csv  ('neo_v2.csv')
@@ -12,12 +14,13 @@ data = pd.read_csv  ('neo_v2.csv')
 data = data.drop("orbiting_body", axis = 1)
 data = data.drop("name", axis = 1)
 data = data.drop("sentry_object", axis = 1)
+data = data.drop("id", axis = 1)
 
 # input_labels = data['hazardous'] 
 # input_data = data.drop("hazardous", axis = 1)
 
 # Splitted the Dataset into Training and Testing
-train_input, test_input = train_test_split(data, test_size=0.3, random_state=43)
+train_input, test_input = train_test_split(data, test_size=0.3, random_state=0)
 
 # Printing the Number of True and False Records in Train and Test Dataset
 print("Train Dataset: No of True: {}, No. False: {}".format(len(train_input[train_input['hazardous'] == True]), len(train_input[train_input['hazardous'] == False])))
@@ -82,7 +85,7 @@ def cnb(input):
     Post_F = p_hazard_false
     # print("For Hazardous = True")
     # Calculating Posterior Probability for Hazardous = True
-    for i in range(len(input)):
+    for i in range(len(input)-1):
         t1 = i*2
         t2 = t1+1
         val = post_prob(calculated_fields.iloc[0,t1],calculated_fields.iloc[0,t2], input[i])
@@ -92,7 +95,7 @@ def cnb(input):
     
     # print("For hazardous = False")
     # Calculating Posterior Probability for Hazardous = False
-    for i in range(len(input)):
+    for i in range(len(input)-1):
         t1 = i*2
         t2 = t1+1
         val = post_prob(calculated_fields.iloc[1,t1],calculated_fields.iloc[1,t2], input[i])
@@ -100,12 +103,65 @@ def cnb(input):
         # print("Post_F: {}".format(Post_F))
         Post_F *= val
     
-    print("Posterior Probability for Hazardous = True is: {}".format(Post_T))
-    print("Posterior Probability for Hazardous = False is: {}".format(Post_F))
+    # print("Posterior Probability for Hazardous = True is: {}".format(Post_T))
+    # print("Posterior Probability for Hazardous = False is: {}".format(Post_F))
 
     if Post_T > Post_F:
         return True
     else:
         return False
     
+# Specificity
+def specificity(matrix):
+    return matrix[0][0]/(matrix[0][0]+ matrix[0][1]) if (matrix[0][0]+matrix[0][1]>0) else 0
+
+# Negative Predictive Value(NPV)
+def npv(matrix):
+    return matrix[0][0]/(matrix[0][1]+ matrix[1][0]) if (matrix[0][1]+ matrix[1][0] > 0) else 0
+
+# Logic for testing the algorithm
+actual_outputs = test_input['hazardous']
+
+predicted_outputs = []
+
+for i in range(len(test_input)):
+    predicted_outputs.append(cnb(test_input.iloc[i].values.flatten().tolist()))
+
+# Creating Classifier Report function
+def classifier_report():
+    name = 'Classical Guassian Naive Bayes Algorithm'
+    cr_prediction = predicted_outputs
+    labels = actual_outputs 
+    cr_cm = confusion_matrix(labels, cr_prediction)
+
+
+    print("Confusion Matrix")
+    print(cr_cm)
+
+    cr_precision = precision_score(labels, cr_prediction)
+    cr_recall = recall_score(labels, cr_prediction)
+    cr_specificity = specificity(cr_cm)
+    cr_npv = npv(cr_cm)
+    cr_level = 0.25 * (cr_precision + cr_recall + cr_specificity + cr_npv)
+
+    print('The precision score of the {} classifier is {:.2f}'
+        .format(name, cr_precision))
+    print('The recall score of the {} classifier is {:.2f}'
+        .format(name, cr_recall))
+    print('The specificity score of the {} classifier is {:.2f}'
+        .format(name, cr_specificity))
+    print('The npv score of the {} classifier is {:.2f}'
+        .format(name, cr_npv))
+    print('The information level is: {:.2f}'
+        .format(cr_level))
     
+classifier_report()
+
+# Visualisation
+correlation = train_input.corr()
+
+# plot the heatmap
+samandar.heatmap(correlation, xticklabels = correlation.columns, yticklabels = correlation.columns, annot=True)
+
+# plot the clustermap
+samandar.clustermap(correlation, xticklabels = correlation.columns, yticklabels = correlation.columns, annot=True)
