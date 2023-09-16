@@ -1,8 +1,13 @@
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from qiskit import QuantumCircuit, execute, Aer
+from qiskit import ClassicalRegister, QuantumRegister
 from qiskit.visualization import plot_histogram
 import matplotlib.pyplot as plt
+from math import asin, sqrt
+from math import log
+import pandas as pd
+from sklearn.metrics import confusion_matrix, precision_score, recall_score
 
 # Loaded the Dataset
 data = pd.read_csv  ('neo_v2.csv')
@@ -48,7 +53,7 @@ for i,j, z in zip(data['est_diameter_max'], data['relative_velocity'], data['mis
         cat_miss.append("Bohot jyda")
 
     
-processed_data = pd.DataFrame(list(zip(data['est_diameter_max'], data['relative_velocity'],data['miss_distance'], cat_max_dia, cat_RV,cat_miss, data['hazardous'])),columns=['Max Diameter','Relative Velocity','Miss Distance', 'Categorized Diameter', 'Categorized Relatice Vel','Categorised Miss Distance','Hazardous'])
+processed_data = pd.DataFrame(list(zip(data['est_diameter_max'], data['relative_velocity'],data['miss_distance'], cat_max_dia, cat_RV,cat_miss, data['hazardous'])),columns=['Max_Diameter','Relative_Velocity','Miss_Distance', 'Categorized_Diameter', 'Categorized_Relative_Vel','Categorised_Miss_Distance','Hazardous'])
 
 # Saving the Processed Data to get a better view
 processed_data.to_csv('processedData.csv')
@@ -66,3 +71,52 @@ print("Test Dataset: No of True: {}, No. False: {}".format(len(test_input[test_i
 print("There are {} Training Records and {} Testing Records".format(train_input.shape[0], test_input.shape[0]))
 
 # need to write preprocess function for calculating backward probability
+
+# Probability of Max Diameter:
+def prob_hazard_calc(df, category_name, category_val):
+    pop = df[df[category_name] == category_val]
+    hazard_pop = pop[pop['Hazardous'] == True]
+    p_pop = len(hazard_pop)/len(pop)
+    return p_pop
+
+# for very small:
+p_vsmall = prob_hazard_calc(train_input, "Categorized_Diameter", "Very Small")
+# print(p_vsmall)
+
+# for small:
+p_small =  prob_hazard_calc(train_input, "Categorized_Diameter", "Small")
+# print(p_small)
+
+# for medium:
+p_med = prob_hazard_calc(train_input, "Categorized_Diameter", "Medium")
+# print(p_med)
+
+# for Large:
+p_large = prob_hazard_calc(train_input, "Categorized_Diameter", "Large")
+# print(p_large)
+
+# for Very Large:
+p_vlarge = prob_hazard_calc(train_input, "Categorized_Diameter", "Very Large")
+# print(p_vlarge)
+
+# # For Relative Velocity:
+
+# for Very Slow:
+p_vslow = prob_hazard_calc(train_input, "Categorized_Relative_Vel", "Very Slow")
+print(p_vslow)
+
+# for Slow:
+p_slow = prob_hazard_calc(train_input, "Categorized_Relative_Vel", "Slow")
+print(p_slow)
+
+# for Medium:
+p_med = prob_hazard_calc(train_input, "Categorized_Relative_Vel", "Medium")
+print(p_med)
+
+# for Fast:
+p_fast = prob_hazard_calc(train_input, "Categorized_Relative_Vel", "Fast")
+print(p_fast)
+
+# for Fast as fuck:
+p_fastaf = prob_hazard_calc(train_input, "Categorized_Relative_Vel", "Fast as fuck")
+print(p_fastaf)
