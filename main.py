@@ -9,51 +9,60 @@ data = pd.read_csv  ('neo_v2.csv')
 
 # Writing code for Pre-Procesing
 
-# Lets drop unwated attributes such as Orbiting Body and Name
-data = data.drop("orbiting_body", axis = 1)
-data = data.drop("name", axis = 1)
-data = data.drop("sentry_object", axis = 1)
-data = data.drop("id", axis = 1)
+cat_max_dia = []
+cat_RV = []
+cat_miss = []
 
-# input_labels = data['hazardous'] 
-# input_data = data.drop("hazardous", axis = 1)
+for i,j, z in zip(data['est_diameter_max'], data['relative_velocity'], data['miss_distance']):
+    if i>=0 and i<0.25:
+        cat_max_dia.append("Very Small")
+    elif i>=0.25 and i<0.5:
+        cat_max_dia.append("Small")
+    elif i>=0.5 and i<0.75:
+        cat_max_dia.append("Medium")
+    elif i>=0.75 and i<1.0:
+        cat_max_dia.append("Large")
+    else :
+        cat_max_dia.append("Very Large")
+        
+    if j>=0 and j<25000:
+        cat_RV.append("Very Slow")  
+    elif j>= 25000 and j<50000 :
+        cat_RV.append("Slow")
+    elif j>= 50000 and j<75000 :
+        cat_RV.append("Medium")
+    elif j>= 75000 and j<100000 :
+        cat_RV.append("Fast")
+    else:
+        cat_RV.append("Fast as fuck")
+
+    if z>=0 and z<10000000:
+        cat_miss.append("Very Less")  
+    elif z>= 10000000 and z<20000000 :
+        cat_miss.append("Less")
+    elif z>= 20000000 and z<30000000 :
+        cat_miss.append("Medium")
+    elif z>= 30000000 and z<40000000 :
+        cat_miss.append("Bohot")
+    else:
+        cat_miss.append("Bohot jyda")
+
+    
+processed_data = pd.DataFrame(list(zip(data['est_diameter_max'], data['relative_velocity'],data['miss_distance'], cat_max_dia, cat_RV,cat_miss, data['hazardous'])),columns=['Max Diameter','Relative Velocity','Miss Distance', 'Categorized Diameter', 'Categorized Relatice Vel','Categorised Miss Distance','Hazardous'])
+
+# Saving the Processed Data to get a better view
+processed_data.to_csv('processedData.csv')
+
+
 
 # Splitted the Dataset into Training and Testing
-train_input, test_input = train_test_split(data, test_size=0.3, random_state=0)
+train_input, test_input = train_test_split(processed_data, test_size=0.3, random_state=0)
 
 # Printing the Number of True and False Records in Train and Test Dataset
-print("Train Dataset: No of True: {}, No. False: {}".format(len(train_input[train_input['hazardous'] == True]), len(train_input[train_input['hazardous'] == False])))
-print("Test Dataset: No of True: {}, No. False: {}".format(len(test_input[test_input['hazardous'] == True]), len(test_input[test_input['hazardous'] == False])))
+print("Train Dataset: No of True: {}, No. False: {}".format(len(train_input[train_input['Hazardous'] == True]), len(train_input[train_input['Hazardous'] == False])))
+print("Test Dataset: No of True: {}, No. False: {}".format(len(test_input[test_input['Hazardous'] == True]), len(test_input[test_input['Hazardous'] == False])))
 
-# Printing Number of records in training and testing
+# # Printing Number of records in training and testing
 print("There are {} Training Records and {} Testing Records".format(train_input.shape[0], test_input.shape[0]))
 
 # need to write preprocess function for calculating backward probability
-
-
-## Processing -> on Quantum Circuit
-
-# Create a quantum circuit with one qubit
-qc = QuantumCircuit(1)
-
-# Define initial_state as |1>
-initial_state = [0,1]
-
-# Apply initialization operation to the qubit at position 0
-print(qc.initialize(initial_state, 0) )
-
-# Tell Qiskit how to simulate our circuit
-backend = Aer.get_backend('statevector_simulator') 
-
-# Do the simulation, returning the result
-result = execute(qc,backend).result()
-
-'''
-The execute function runs our quantum circuit (qc) at the specified backend. It returns a job object that has a useful method job.result(). This returns the result object once our program completes it.
-'''
-
-# get the probability distribution
-counts = result.get_counts()
-
-# Show the histogram
-plot_histogram(counts)
