@@ -8,7 +8,7 @@ import math
 import seaborn as samandar
 
 # Loaded the Dataset
-data = pd.read_csv  ('neo_v2.csv')
+data = pd.read_csv('neo_v2.csv')
 
 # Lets drop unwated attributes such as Orbiting Body and Name
 data = data.drop("orbiting_body", axis = 1)
