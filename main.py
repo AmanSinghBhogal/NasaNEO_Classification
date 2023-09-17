@@ -123,9 +123,9 @@ p_Rmed, pop_Rmed = prob_hazard_calc(train_input, "Categorized_Relative_Vel", "Me
 p_fast, pop_fast = prob_hazard_calc(train_input, "Categorized_Relative_Vel", "Fast")
 # print(p_fast)
 
-# for Fast as fuck:
+# for Very Fast:
 p_vfast, pop_vfast = prob_hazard_calc(train_input, "Categorized_Relative_Vel", "Very Fast")
-# print(p_fastaf)
+# print(p_vfast)
 
 print("\n\nPrinting Chances of Relative Velocity Objects given they are hazardous:\n")
 print("{} Very Slow Relative Velocity objects had {} chances of being hazardous".format(pop_vslow, p_vslow))
@@ -133,3 +133,19 @@ print("{} Slow Relative Velocity objects had {} chances of being hazardous".form
 print("{} Medium Relative Velocity objects had {} chances of being hazardous".format(pop_Rmed, p_Rmed))
 print("{} Fast Relative Velocity objects had {} chances of being hazardous".format(pop_fast, p_fast))
 print("{} Very Fast Relative Velocity objects had {} chances of being hazardous".format(pop_vfast, p_vfast))
+
+# Specifying the marginal probability
+def prob_to_angle(prob):
+    """
+    Converts a given P(psi) value into an equivalent theta value.
+    """
+    return 2*asin(sqrt(prob))
+
+qc = QuantumCircuit(1)
+
+# Set qubit to prior
+qc.ry(prob_to_angle(0.4), 0)
+
+# execute the qc
+results = execute(qc,Aer.get_backend('statevector_simulator')).result().get_counts()
+plot_histogram(results)
