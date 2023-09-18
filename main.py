@@ -66,9 +66,15 @@ train_input, test_input = train_test_split(processed_data, test_size=0.3, random
 # Printing Number of records in training and testing
 print("There are {} Training Records and {} Testing Records".format(train_input.shape[0], test_input.shape[0]))
 
+# Printing Number of records in training and testing
+print("There are {} Training Records and {} Testing Records".format(train_input.shape[0], test_input.shape[0]))
+
 # Printing the Number of True and False Records in Train and Test Dataset
 print("Train Dataset: No of True: {}, No. False: {}".format(len(train_input[train_input['Hazardous'] == True]), len(train_input[train_input['Hazardous'] == False])))
 print("Test Dataset: No of True: {}, No. False: {}".format(len(test_input[test_input['Hazardous'] == True]), len(test_input[test_input['Hazardous'] == False])))
+
+# # Printing Number of records in training and testing
+print("There are {} Training Records and {} Testing Records".format(train_input.shape[0], test_input.shape[0]))
 
 # need to write preprocess function for calculating backward probability
 
@@ -150,3 +156,5 @@ qc.ry(prob_to_angle(0.4), 0)
 # execute the qc
 results = execute(qc,Aer.get_backend('statevector_simulator')).result().get_counts()
 plot_histogram(results)
+
+
