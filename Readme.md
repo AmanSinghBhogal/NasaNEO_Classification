@@ -46,5 +46,5 @@ We would like to express our gratitude to Prof. Pratiksha Meshram at SVKM's NMIM
 
 For questions, feedback, or collaboration opportunities, please contact:
 
-- Mausmi Sinha - [Email](sinhatanu2001@gmail.com) - [GitHub](https://github.com/MausmiSinha)
-- Aman Singh Bhogal - [Email](bhogalamansingh22@gmail.com) - [GitHub](https://github.com/AmanSinghBhogal)
+- Mausmi Sinha - [sinhatanu2001@gmail.com] - [GitHub](https://github.com/MausmiSinha)
+- Aman Singh Bhogal - [bhogalamansingh22@gmail.com] - [GitHub](https://github.com/AmanSinghBhogal)
