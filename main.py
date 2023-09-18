@@ -73,9 +73,6 @@ print("There are {} Training Records and {} Testing Records".format(train_input.
 print("Train Dataset: No of True: {}, No. False: {}".format(len(train_input[train_input['Hazardous'] == True]), len(train_input[train_input['Hazardous'] == False])))
 print("Test Dataset: No of True: {}, No. False: {}".format(len(test_input[test_input['Hazardous'] == True]), len(test_input[test_input['Hazardous'] == False])))
 
-# # Printing Number of records in training and testing
-print("There are {} Training Records and {} Testing Records".format(train_input.shape[0], test_input.shape[0]))
-
 # need to write preprocess function for calculating backward probability
 
 # Probability of Max Diameter:
