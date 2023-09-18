@@ -73,7 +73,7 @@ print("Test Dataset: No of True: {}, No. False: {}".format(len(test_input[test_i
 
 # need to write preprocess function for calculating backward probability
 
-# Probability of Max Diameter:
+# Function for Calculating Category Prob. :
 def prob_hazard_calc(df, category_name, category_val):
     pop = df[df[category_name] == category_val]
     hazard_pop = pop[pop['Hazardous'] == True]
@@ -144,11 +144,12 @@ def prob_to_angle(prob):
 
 qc = QuantumCircuit(1)
 
-# Set qubit to prior
-qc.ry(prob_to_angle(0.4), 0)
+# Set qubit to prior since in training data number of hazardous objects = 6183 and total records = 63585 therefore, P(hazardous) = 6183/63585 = 0.097
+qc.ry(prob_to_angle(0.097), 0)
 
 # execute the qc
 results = execute(qc,Aer.get_backend('statevector_simulator')).result().get_counts()
 plot_histogram(results)
+
 
 
