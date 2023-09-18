@@ -66,10 +66,12 @@ train_input, test_input = train_test_split(processed_data, test_size=0.3, random
 # Printing Number of records in training and testing
 print("There are {} Training Records and {} Testing Records".format(train_input.shape[0], test_input.shape[0]))
 
+# Printing Number of records in training and testing
+print("There are {} Training Records and {} Testing Records".format(train_input.shape[0], test_input.shape[0]))
+
 # Printing the Number of True and False Records in Train and Test Dataset
 print("Train Dataset: No of True: {}, No. False: {}".format(len(train_input[train_input['Hazardous'] == True]), len(train_input[train_input['Hazardous'] == False])))
 print("Test Dataset: No of True: {}, No. False: {}".format(len(test_input[test_input['Hazardous'] == True]), len(test_input[test_input['Hazardous'] == False])))
-
 
 # need to write preprocess function for calculating backward probability
 
@@ -106,7 +108,8 @@ print("{} Small Diameter objects had {} chances of being hazardous".format(pop_s
 print("{} Medium Diameter objects had {} chances of being hazardous".format(pop_med, p_med))
 print("{} Large Diameter objects had {} chances of being hazardous".format(pop_large, p_large))
 print("{} Very Large Diameter objects had {} chances of being hazardous".format(pop_vlarge, p_vlarge))
-# # For Relative Velocity:
+
+# For Relative Velocity:
 
 # for Very Slow:
 p_vslow, pop_vslow = prob_hazard_calc(train_input, "Categorized_Relative_Vel", "Very Slow")
