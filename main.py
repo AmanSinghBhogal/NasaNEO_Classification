@@ -4,7 +4,7 @@ from qiskit import QuantumCircuit, execute, Aer
 from qiskit import ClassicalRegister, QuantumRegister
 from qiskit.visualization import plot_histogram
 import matplotlib.pyplot as plt
-from math import asin, sqrt
+from math import asin, sqrt, pi
 from math import log
 import pandas as pd
 from sklearn.metrics import confusion_matrix, precision_score, recall_score
@@ -169,5 +169,50 @@ qc.cx(0,1)
 results = execute(qc,Aer.get_backend('statevector_simulator')).result().get_counts()
 plot_histogram(results)
 
+def ccnot(qc):
+    theta = pi/2
+    # Apply the first half of the rotatione
+    qc.cry(theta, 1,2)
 
+    # This sequence has no effect if both control qubits
+    # are in state |1>
+    qc.cx(0,1)
+    qc.cry(-theta,1,2)
+    qc.cx(0,1)
 
+    # Apply the second half of the rotation
+    qc.cry(theta, 0,2)
+
+    # execute the qc
+    return execute(qc,Aer.get_backend('statevector_simulator')).result().get_counts()
+
+# Listing The CCNOT‐gate with both control qubits in state |1>
+qc = QuantumCircuit(3)
+
+# set both qubits to |1>
+qc.x(0)
+qc.x(1)
+
+# apply the ccnot-gate and execute the qc
+results = ccnot(qc)
+plot_histogram(results)
+
+# Listing The CCNOT‐gate with only control qubit q1 in state |1>
+qc = QuantumCircuit(3)
+
+# set only qubit q_1 to |1>
+qc.x(1)
+
+# apply the ccnot-gate and execute the qc
+results = ccnot(qc)
+plot_histogram(results)
+
+# Listing The CCNOT‐gate with only control qubit q0 in state |1>
+qc = QuantumCircuit(3)
+
+# set only qubit q_0 to |1>
+qc.x(0)
+
+# apply the ccnot-gate and execute the qc
+results = ccnot(qc)
+plot_histogram(results)
