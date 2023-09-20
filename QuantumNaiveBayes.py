@@ -290,3 +290,33 @@ def qbn(data, hist=True):
 
 # Ignoring the missing data
 qbn(list(filter(lambda item: item[1] is not None ,data)))
+
+# Calculate the log‐likelihood when ignoring the missing data
+def eval_qbn(model, prepare_data, data):
+    results = model(prepare_data(data), hist=False)
+    return (
+        round(log_likelihood(data, 
+            results['11'], # prob_a_b
+            results['01'], # prob_a_nb
+            results['10'], # prob_na_b
+            results['00']  # prob_na_nb
+        ), 3),
+        results['10'] / (results['10'] + results['00'])
+    )
+
+print(eval_qbn(qbn, lambda dataset: list(filter(lambda item: item[1] is not None ,dataset)), data))
+
+# Calculate the log‐likelihood when filling in 0
+print(eval_qbn(qbn, lambda dataset: list(map(lambda item: item if item[1] is not None else (item[0], 0) ,dataset)), data))
+
+# Evaluating the guess
+print(eval_qbn(qbn, lambda dataset: list(map(lambda item: item if item[1] is not None else (item[0], 0.5) ,dataset)), data))
+
+# Refining the model
+print(eval_qbn(qbn, lambda dataset: list(map(lambda item: item if item[1] is not None else (item[0], 0.3) ,dataset)), data))
+
+# Further refining the model
+print(eval_qbn(qbn, lambda dataset: list(map(lambda item: item if item[1] is not None else (item[0], 0.252) ,dataset)), data))
+
+# Another iteration
+print(eval_qbn(qbn, lambda dataset: list(map(lambda item: item if item[1] is not None else (item[0], 0.252) ,dataset)), data))
