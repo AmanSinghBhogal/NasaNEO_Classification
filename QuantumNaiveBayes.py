@@ -151,9 +151,37 @@ p_hazardous_fast_small=len(hazardous_fast_small)/len(population_fast_small)
 population_slow = train_input[train_input.Categorized_Relative_Vel.eq("Slow")]
 population_slow_large = population_slow[population_slow.Categorized_Diameter.eq("Large")]
 hazardous_slow_large=population_slow_large[population_slow_large.Hazardous.eq(1)]
-p_surv_m_c=len(hazardous_slow_large)/len(population_slow_large)
+p_hazardous_slow_large=len(hazardous_slow_large)/len(population_slow_large)
 
 # Slow Relative Velocity and Small Diameter
 population_slow_small = population_slow[population_slow.Categorized_Diameter.eq("Small")]
 hazardous_slow_small = population_slow_small[population_slow_small.Hazardous.eq(1)]
-p_surv_m_a=len(hazardous_slow_small)/len(population_slow_small)
+p_hazardous_slow_small=len(hazardous_slow_small)/len(population_slow_small)
+
+# Initializing the child node:
+
+# set state |00> to conditional probability of slow RV and small Diameter
+qc.x(0)
+qc.x(1)
+ccry(qc,prob_to_angle(p_hazardous_slow_small),0,1,2)
+qc.x(0)
+qc.x(1)
+
+# set state |01> to conditional probability of slow RV and large Diameter
+qc.x(0)
+ccry(qc,prob_to_angle(p_hazardous_slow_large),0,1,2)
+qc.x(0)
+
+# set state |10> to conditional probability of fast RV and small Diameter
+qc.x(1)
+ccry(qc,prob_to_angle(p_hazardous_fast_small),0,1,2)
+qc.x(1)
+
+# set state |11> to conditional probability of fast RV and large Diameter
+ccry(qc,prob_to_angle(p_hazardous_fast_large),0,1,2)
+
+# Circuit execution
+
+# execute the qc
+results = execute(qc,Aer.get_backend('statevector_simulator')).result().get_counts()
+plot_histogram(results)
