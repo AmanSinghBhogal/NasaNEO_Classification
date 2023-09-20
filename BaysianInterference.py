@@ -20,11 +20,9 @@ cat_miss = []
 
 max_dia_mean = mean(data['est_diameter_max'])
 Rv_mean = mean(data['relative_velocity'])
-miss_mean = mean(data['miss_distance'])
 
 print("\n\nThe Mean Max Diameter is: ", max_dia_mean)
 print("The Mean Relative Velocity is: ", Rv_mean)
-print("The Mean Miss Distance is: ", miss_mean)
 
 for i,j, z in zip(data['est_diameter_max'], data['relative_velocity'], data['miss_distance']):
     if i>=max_dia_mean:
@@ -37,10 +35,12 @@ for i,j, z in zip(data['est_diameter_max'], data['relative_velocity'], data['mis
     else:
         cat_RV.append("Slow")
 
-    if z>=miss_mean:
-        cat_miss.append("More")  
+    if z>=0 and z< 25000000:
+        cat_miss.append("Less") 
+    elif z>= 25000000 and z<50000000:
+        cat_miss.append("Medium")
     else:
-        cat_miss.append("Less")
+        cat_miss.append("More")
 
 processed_data = pd.DataFrame(list(zip(data['est_diameter_max'], data['relative_velocity'],data['miss_distance'], cat_max_dia, cat_RV,cat_miss, data['hazardous'])),columns=['Max_Diameter','Relative_Velocity','Miss_Distance', 'Categorized_Diameter', 'Categorized_Relative_Vel','Categorised_Miss_Distance','Hazardous'])
 
@@ -100,12 +100,17 @@ print("{} Fast Relative Velocity objects had {} chances of being hazardous".form
 p_less, pop_less = prob_hazard_calc(train_input, "Categorised_Miss_Distance", "Less")
 # print(p_less, pop_less)
 
+# For Medium
+p_med, pop_med = prob_hazard_calc(train_input, "Categorised_Miss_Distance", "Medium")
+# print(p_med, pop_med)
+
 # For More:
 p_more, pop_more = prob_hazard_calc(train_input, "Categorised_Miss_Distance", "More")
 # print(p_more, pop_more)
 
 print("\n\nPrinting Chances of Miss Distance Objects given they are hazardous:\n")
 print("{} Less Miss Distance objects had {} chances of being hazardous".format(pop_less, p_less))
+print("{} Medium Miss Distance objects had {} chances of being hazardous".format(pop_med, p_med))
 print("{} More Miss Distance objects had {} chances of being hazardous".format(pop_more, p_more))
 
 # Implementing Baysian Interference:
@@ -216,13 +221,63 @@ print(eval_qbn(qbn, lambda dataset: list(map(lambda item: item if item[1] is not
 print(eval_qbn(qbn, lambda dataset: list(map(lambda item: item if item[1] is not None else (item[0], 0.252) ,dataset)), data))
 
 # positions of the qubits
-QPOS_isLarge = 0
-QPOS_fast = 1
+QPOS_dia = 0
+QPOS_RV = 1
 
 def apply_islarge_fast(qc):
     # set the marginal probability of large Diameter
-    qc.ry(prob_to_angle(p_large), QPOS_isLarge)
+    qc.ry(prob_to_angle(p_large), QPOS_dia)
 
     # set the marginal probability of Fast Relative Velocity
-    qc.ry(prob_to_angle(p_fast), QPOS_fast)
+    qc.ry(prob_to_angle(p_fast), QPOS_RV)
+
+# Defining the CCRY‐gate:
+def ccry(qc, theta, control1, control2, controlled):
+    qc.cry(theta/2, control2, controlled)
+    qc.cx(control1, control2)
+    qc.cry(-theta/2, control2, controlled)
+    qc.cx(control1, control2)
+    qc.cry(theta/2, control1, controlled)
+
+# Listing Represent the norm
+# position of the qubit representing the norm
+QPOS_NORM = 2
+
+def apply_norm(qc, norm_params):
+    """
+    norm_params = {
+        'p_norm_small_slow': 0.25,
+        'p_norm_small_fast': 0.35,
+        'p_norm_large_slow': 0.45,
+        'p_norm_large_fast': 0.55
+    }
+    """
+
+    # set the conditional probability of Norm given small/slow
+    qc.x(QPOS_dia)
+    qc.x(QPOS_RV)
+    ccry(qc, prob_to_angle(
+        norm_params['p_norm_small_slow']
+    ),QPOS_dia, QPOS_RV, QPOS_NORM)
+    qc.x(QPOS_dia)
+    qc.x(QPOS_RV)
+
+    # set the conditional probability of Norm given small/fast
+    qc.x(QPOS_dia)
+    ccry(qc, prob_to_angle(
+        norm_params['p_norm_small_fast']
+    ),QPOS_dia, QPOS_RV, QPOS_NORM)
+    qc.x(QPOS_dia)
+
+    # set the conditional probability of Norm given large/slow
+    qc.x(QPOS_RV)
+    ccry(qc, prob_to_angle(
+        norm_params['p_norm_large_slow']
+    ),QPOS_dia, QPOS_RV, QPOS_NORM)
+    qc.x(QPOS_RV)
+
+    # set the conditional probability of Norm given large/fast
+    ccry(qc, prob_to_angle(
+        norm_params['p_norm_large_fast']
+    ),QPOS_dia, QPOS_RV, QPOS_NORM)
 
