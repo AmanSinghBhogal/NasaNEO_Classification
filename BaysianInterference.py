@@ -108,7 +108,7 @@ print("\n\nPrinting Chances of Miss Distance Objects given they are hazardous:\n
 print("{} Less Miss Distance objects had {} chances of being hazardous".format(pop_less, p_less))
 print("{} More Miss Distance objects had {} chances of being hazardous".format(pop_more, p_more))
 
-# Implementing Quantum Naive Bayes Circuit:
+# Implementing Baysian Interference:
 
 # Specifying the marginal probability
 def prob_to_angle(prob):
@@ -117,109 +117,112 @@ def prob_to_angle(prob):
     """
     return 2*asin(sqrt(prob))
 
-# Initialize the quantum circuit
-qc = QuantumCircuit(3)
+# Baysian Interference
 
-# Set qubit0 to p_small i.e for Max Diameter
-qc.ry(prob_to_angle(p_large), 0)
+# Dataset with missing values
+data = [
+    (1, 1), (1, 1), (0, 0), (0, 0), (0, 0), (0, None), (0, 1), (1, 0)
+]
 
-# Set qubit1 to p_fast i.e for Relative Velocity
-qc.ry(prob_to_angle(p_fast), 1)
+# The log‐likelihood function adapted for our data
+def log_likelihood(data, prob_a_b, prob_a_nb, prob_na_b, prob_na_nb):
+    def get_prob(point):    
+        if point[0] == 1 and point[1] == 1:
+            return log(prob_a_b)
+        elif point[0] == 1 and point[1] == 0:
+            return log(prob_a_nb)
+        elif point[0] == 0 and point[1] == 1:
+            return log(prob_na_b)
+        elif point[0] == 0 and point[1] == 0:
+            return log(prob_na_nb)
+        else:
+            return log(prob_na_b+prob_na_nb)
 
-# Defining the CCRY‐gate:
-def ccry(qc, theta, control1, control2, controlled):
-    qc.cry(theta/2, control2, controlled)
-    qc.cx(control1, control2)
-    qc.cry(-theta/2, control2, controlled)
-    qc.cx(control1, control2)
-    qc.cry(theta/2, control1, controlled)
+    return sum(map(get_prob, data))
 
-# Calculating the conditional probabilities
+# The as‐pqc function
+def as_pqc(cnt_quantum, with_qc, cnt_classical=1, shots=1, hist=False, measure=False):
+    # Prepare the circuit with qubits and a classical bit to hold the measurement
+    qr = QuantumRegister(cnt_quantum)
+    cr = ClassicalRegister(cnt_classical)
+    qc = QuantumCircuit(qr, cr) if measure else QuantumCircuit(qr)
 
-# fast Relative Velocity and large Diameter
-population_fast=train_input[train_input.Categorized_Relative_Vel.eq("Fast")]
-population_fast_large= population_fast[population_fast.Categorized_Diameter.eq("Large")]
-hazardous_fast_large = population_fast_large[population_fast_large.Hazardous.eq(1)]
-p_hazardous_fast_large=len(hazardous_fast_large)/len(population_fast_large)
+    with_qc(qc, qr=qr, cr=cr)
+    
+    results = execute(
+        qc,
+        Aer.get_backend('statevector_simulator') if measure is False else Aer.get_backend('qasm_simulator'),
+        shots=shots
+    ).result().get_counts()
+    
+    return plot_histogram(results, figsize=(12,4)) if hist else results
 
-# fast Relative Velocity and small Diameter
-population_fast_small = population_fast[population_fast.Categorized_Diameter.eq("Small")]
-hazardous_fast_small = population_fast_small[population_fast_small.Hazardous.eq(1)]
-p_hazardous_fast_small=len(hazardous_fast_small)/len(population_fast_small)
+# The quantum Bayesian network
+def qbn(data, hist=True): 
+    def circuit(qc, qr=None, cr=None):
+        list_a = list(filter(lambda item: item[0] == 1, data))
+        list_na = list(filter(lambda item: item[0] == 0, data))
+   
+        # set the marginal probability of A
+        qc.ry(prob_to_angle(
+            len(list_a) / len(data)
+        ), 0)
 
-# Slow Relative Velocity and Large Diameter
-population_slow = train_input[train_input.Categorized_Relative_Vel.eq("Slow")]
-population_slow_large = population_slow[population_slow.Categorized_Diameter.eq("Large")]
-hazardous_slow_large=population_slow_large[population_slow_large.Hazardous.eq(1)]
-p_hazardous_slow_large=len(hazardous_slow_large)/len(population_slow_large)
+        # set the conditional probability of NOT A and (B / not B)
+        qc.x(0)
+        qc.cry(prob_to_angle(
+            sum(list(map(lambda item: item[1], list_na))) /  len(list_na)
+        ),0,1)
+        qc.x(0)
 
-# Slow Relative Velocity and Small Diameter
-population_slow_small = population_slow[population_slow.Categorized_Diameter.eq("Small")]
-hazardous_slow_small = population_slow_small[population_slow_small.Hazardous.eq(1)]
-p_hazardous_slow_small=len(hazardous_slow_small)/len(population_slow_small)
+        # set the conditional probability of A and (B / not B)
+        qc.cry(prob_to_angle(
+            sum(list(map(lambda item: item[1], list_a))) /  len(list_a)
+        ),0,1)
 
-# Initializing the child node:
+    return as_pqc(2, circuit, hist=hist)
 
-# set state |00> to conditional probability of slow RV and small Diameter
-qc.x(0)
-qc.x(1)
-ccry(qc,prob_to_angle(p_hazardous_slow_small),0,1,2)
-qc.x(0)
-qc.x(1)
+# Ignoring the missing data
+qbn(list(filter(lambda item: item[1] is not None ,data)))
 
-# set state |01> to conditional probability of slow RV and large Diameter
-qc.x(0)
-ccry(qc,prob_to_angle(p_hazardous_slow_large),0,1,2)
-qc.x(0)
+# Calculate the log‐likelihood when ignoring the missing data
+def eval_qbn(model, prepare_data, data):
+    results = model(prepare_data(data), hist=False)
+    return (
+        round(log_likelihood(data, 
+            results['11'], # prob_a_b
+            results['01'], # prob_a_nb
+            results['10'], # prob_na_b
+            results['00']  # prob_na_nb
+        ), 3),
+        results['10'] / (results['10'] + results['00'])
+    )
 
-# set state |10> to conditional probability of fast RV and small Diameter
-qc.x(1)
-ccry(qc,prob_to_angle(p_hazardous_fast_small),0,1,2)
-qc.x(1)
+print(eval_qbn(qbn, lambda dataset: list(filter(lambda item: item[1] is not None ,dataset)), data))
 
-# set state |11> to conditional probability of fast RV and large Diameter
-ccry(qc,prob_to_angle(p_hazardous_fast_large),0,1,2)
+# Calculate the log‐likelihood when filling in 0
+print(eval_qbn(qbn, lambda dataset: list(map(lambda item: item if item[1] is not None else (item[0], 0) ,dataset)), data))
 
-# Circuit execution
+# Evaluating the guess
+print(eval_qbn(qbn, lambda dataset: list(map(lambda item: item if item[1] is not None else (item[0], 0.5) ,dataset)), data))
 
-# execute the qc
-results = execute(qc,Aer.get_backend('statevector_simulator')).result().get_counts()
-plot_histogram(results)
+# Refining the model
+print(eval_qbn(qbn, lambda dataset: list(map(lambda item: item if item[1] is not None else (item[0], 0.3) ,dataset)), data))
 
-# Quantum circuit with classical register
-qr = QuantumRegister(3)
-cr = ClassicalRegister(1)
-qc = QuantumCircuit(qr, cr)
+# Further refining the model
+print(eval_qbn(qbn, lambda dataset: list(map(lambda item: item if item[1] is not None else (item[0], 0.252) ,dataset)), data))
 
-# Listing Run the circuit including a measurement
+# Another iteration
+print(eval_qbn(qbn, lambda dataset: list(map(lambda item: item if item[1] is not None else (item[0], 0.252) ,dataset)), data))
 
-# -- INCLUDE ALL GATES HERE --
-# Set qubit0 to p_small i.e for Max Diameter
-qc.ry(prob_to_angle(p_large), 0)
+# positions of the qubits
+QPOS_isLarge = 0
+QPOS_fast = 1
 
-# Set qubit1 to p_fast i.e for Relative Velocity
-qc.ry(prob_to_angle(p_fast), 1)
+def apply_islarge_fast(qc):
+    # set the marginal probability of large Diameter
+    qc.ry(prob_to_angle(p_large), QPOS_isLarge)
 
-# set state |00> to conditional probability of slow RV and small Diameter
-qc.x(0)
-qc.x(1)
-ccry(qc,prob_to_angle(p_hazardous_slow_small),0,1,2)
-qc.x(0)
-qc.x(1)
+    # set the marginal probability of Fast Relative Velocity
+    qc.ry(prob_to_angle(p_fast), QPOS_fast)
 
-# set state |01> to conditional probability of slow RV and large Diameter
-qc.x(0)
-ccry(qc,prob_to_angle(p_hazardous_slow_large),0,1,2)
-qc.x(0)
-
-# set state |10> to conditional probability of fast RV and small Diameter
-qc.x(1)
-ccry(qc,prob_to_angle(p_hazardous_fast_small),0,1,2)
-qc.x(1)
-
-# set state |11> to conditional probability of fast RV and large Diameter
-ccry(qc,prob_to_angle(p_hazardous_fast_large),0,1,2)
-
-qc.measure(qr[2], cr[0])
-results = execute(qc,Aer.get_backend('qasm_simulator'), shots=1000).result().get_counts()
-plot_histogram(results)
