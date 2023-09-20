@@ -121,7 +121,7 @@ def prob_to_angle(prob):
 qc = QuantumCircuit(3)
 
 # Set qubit0 to p_small i.e for Max Diameter
-qc.ry(prob_to_angle(p_small), 0)
+qc.ry(prob_to_angle(p_large), 0)
 
 # Set qubit1 to p_fast i.e for Relative Velocity
 qc.ry(prob_to_angle(p_fast), 1)
@@ -184,4 +184,42 @@ ccry(qc,prob_to_angle(p_hazardous_fast_large),0,1,2)
 
 # execute the qc
 results = execute(qc,Aer.get_backend('statevector_simulator')).result().get_counts()
+plot_histogram(results)
+
+# Quantum circuit with classical register
+qr = QuantumRegister(3)
+cr = ClassicalRegister(1)
+qc = QuantumCircuit(qr, cr)
+
+# Listing Run the circuit including a measurement
+
+# -- INCLUDE ALL GATES HERE --
+# Set qubit0 to p_small i.e for Max Diameter
+qc.ry(prob_to_angle(p_large), 0)
+
+# Set qubit1 to p_fast i.e for Relative Velocity
+qc.ry(prob_to_angle(p_fast), 1)
+
+# set state |00> to conditional probability of slow RV and small Diameter
+qc.x(0)
+qc.x(1)
+ccry(qc,prob_to_angle(p_hazardous_slow_small),0,1,2)
+qc.x(0)
+qc.x(1)
+
+# set state |01> to conditional probability of slow RV and large Diameter
+qc.x(0)
+ccry(qc,prob_to_angle(p_hazardous_slow_large),0,1,2)
+qc.x(0)
+
+# set state |10> to conditional probability of fast RV and small Diameter
+qc.x(1)
+ccry(qc,prob_to_angle(p_hazardous_fast_small),0,1,2)
+qc.x(1)
+
+# set state |11> to conditional probability of fast RV and large Diameter
+ccry(qc,prob_to_angle(p_hazardous_fast_large),0,1,2)
+
+qc.measure(qr[2], cr[0])
+results = execute(qc,Aer.get_backend('qasm_simulator'), shots=1000).result().get_counts()
 plot_histogram(results)
