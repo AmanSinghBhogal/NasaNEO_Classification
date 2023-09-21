@@ -394,22 +394,52 @@ hazardous_params = {
 qbn_neo(norm_params, hazardous_params, hist=True)
 
 # Listing Calculate the parameters of the norm
-# def calculate_norm_params(objects):
-#     # the different populations in our data
-#     pop_large = objects[objects.isLa.eq(1)]
-#     pop_small = passengers[passengers.IsChild.eq(0)]
+def calculate_norm_params(objects):
+    # the different diameteric objects in our data
+    pop_large = objects[objects.Categorized_Diameter.eq("Large")]
+    pop_small = objects[objects.Categorized_Diameter.eq("Small")]
 
-#     # combinations of being a child and gender
-#     pop_am = pop_small[pop_small.Sex.eq('male')]
-#     pop_af = pop_small[pop_small.Sex.eq('female')]
-#     pop_cm = pop_children[pop_children.Sex.eq('male')]
-#     pop_cf = pop_children[pop_children.Sex.eq('female')]
+    # combinations of being a large object and Relative Velocity
+    pop_small_slow = pop_small[pop_small.Categorized_Relative_Vel.eq('Slow')]
+    pop_small_fast = pop_small[pop_small.Categorized_Relative_Vel.eq('Fast')]
+    pop_large_slow = pop_large[pop_large.Categorized_Relative_Vel.eq('Slow')]
+    pop_large_fast = pop_large[pop_large.Categorized_Relative_Vel.eq('Fast')]
 
-#     norm_params = {
-#         'p_norm_am': pop_am.Norm.sum() /  len(pop_am),
-#         'p_norm_af': pop_af.Norm.sum() /  len(pop_af),
-#         'p_norm_cm': pop_cm.Norm.sum() /  len(pop_cm),
-#         'p_norm_cf': pop_cf.Norm.sum() /  len(pop_cf),
-#     }
+    norm_params = {
+        'p_norm_small_slow': pop_small_slow.Norm.sum() /  len(pop_small_slow),
+        'p_norm_small_fast': pop_small_fast.Norm.sum() /  len(pop_small_fast),
+        'p_norm_large_slow': pop_large_slow.Norm.sum() /  len(pop_large_slow),
+        'p_norm_large_fast': pop_large_fast.Norm.sum() /  len(pop_large_fast),
+    }
 
-#     return norm_params
+    return norm_params
+
+# Listing Calculate the parameters of hazardous
+def calculate_hazardous_params(objects):
+    # all hazardous
+    hazardous = objects[objects.Hazardous.eq(1)]
+    
+    # weight the object
+    def weight_object(norm, missDistance):
+        return lambda object: (object[0] if norm else 1-object[0]) * (1 if object[1] == missDistance else 0)
+
+    # calculate the probability of being hazardous
+    def calc_prob(norm, missDistance):
+        return sum(list(map(
+            weight_object(norm, missDistance),
+            list(zip(hazardous['Norm'], hazardous['Categorised_Miss_Distance']))
+        ))) / sum(list(map(
+            weight_object(norm, missDistance), 
+            list(zip(objects['Norm'], objects['Categorised_Miss_Distance']))
+        )))
+    
+    hazardous_params = {
+        'p_hazardous_favoured_more': calc_prob(True, "More"),
+        'p_hazardous_favoured_med': calc_prob(True, "Medium"),
+        'p_hazardous_favoured_less': calc_prob(True, "Less"),
+        'p_hazardous_unfavoured_more': calc_prob(False, "More"),
+        'p_hazardous_unfavoured_med': calc_prob(False, "Medium"),
+        'p_hazardous_unfavoured_less': calc_prob(False, "Less")
+    }
+
+    return hazardous_params
