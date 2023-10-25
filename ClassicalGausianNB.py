@@ -53,7 +53,7 @@ row1.append(st.variance(train_input[train_input['hazardous'] == True]['absolute_
 
 # Calculating Probabilities for Hazardous = False
 row2 = []
-# Calculating Mean and variance for est_diameter_min for hazardous = true
+# Calculating Mean and variance for est_diameter_min for hazardous = false
 row2.append(st.mean(train_input[train_input['hazardous'] == False]['est_diameter_min']))
 row2.append(st.variance(train_input[train_input['hazardous'] == False]['est_diameter_min']))
 row2.append(st.mean(train_input[train_input['hazardous'] == False]['est_diameter_max']))
@@ -76,7 +76,6 @@ def post_prob(mean, var, input_x):
 
 # df.iloc[row, column]
 # print(calculated_fields.iloc[0,1])
-
 
 # Writing the Estimation function:
 def cnb(input):
