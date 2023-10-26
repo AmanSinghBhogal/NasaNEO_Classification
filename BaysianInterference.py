@@ -21,8 +21,8 @@ cat_miss = []
 max_dia_mean = mean(data['est_diameter_max'])
 Rv_mean = mean(data['relative_velocity'])
 
-print("\n\nThe Mean Max Diameter is: ", max_dia_mean)
-print("The Mean Relative Velocity is: ", Rv_mean)
+# print("\n\nThe Mean Max Diameter is: ", max_dia_mean)
+# print("The Mean Relative Velocity is: ", Rv_mean)
 
 for i,j, z in zip(data['est_diameter_max'], data['relative_velocity'], data['miss_distance']):
     if i>=max_dia_mean:
@@ -50,12 +50,12 @@ processed_data.to_csv('processedData.csv')
 # Splitted the Dataset into Training and Testing
 train_input, test_input = train_test_split(processed_data, test_size=0.3, random_state=0)
 
-# Printing Number of records in training and testing
-print("There are {} Training Records and {} Testing Records".format(train_input.shape[0], test_input.shape[0]))
+# # Printing Number of records in training and testing
+# print("There are {} Training Records and {} Testing Records".format(train_input.shape[0], test_input.shape[0]))
 
-# Printing the Number of True and False Records in Train and Test Dataset
-print("Train Dataset: No of True: {}, No. False: {}".format(len(train_input[train_input['Hazardous'] == True]), len(train_input[train_input['Hazardous'] == False])))
-print("Test Dataset: No of True: {}, No. False: {}".format(len(test_input[test_input['Hazardous'] == True]), len(test_input[test_input['Hazardous'] == False])))
+# # Printing the Number of True and False Records in Train and Test Dataset
+# print("Train Dataset: No of True: {}, No. False: {}".format(len(train_input[train_input['Hazardous'] == True]), len(train_input[train_input['Hazardous'] == False])))
+# print("Test Dataset: No of True: {}, No. False: {}".format(len(test_input[test_input['Hazardous'] == True]), len(test_input[test_input['Hazardous'] == False])))
 
 # need to write preprocess function for calculating backward probability
 
@@ -76,9 +76,9 @@ p_small, pop_small = prob_hazard_calc(train_input, "Categorized_Diameter", "Smal
 p_large, pop_large = prob_hazard_calc(train_input, "Categorized_Diameter", "Large")
 # print(p_large, pop_large)
 
-print("\n\nPrinting Chances of Max Diameter Objects given they are hazardous:\n")
-print("{} Small Diameter objects had {} chances of being hazardous".format(pop_small, p_small))
-print("{} Large Diameter objects had {} chances of being hazardous".format(pop_large, p_large))
+# print("\n\nPrinting Chances of Max Diameter Objects given they are hazardous:\n")
+# print("{} Small Diameter objects had {} chances of being hazardous".format(pop_small, p_small))
+# print("{} Large Diameter objects had {} chances of being hazardous".format(pop_large, p_large))
 
 # For Relative Velocity:
 
@@ -90,9 +90,9 @@ p_slow, pop_slow = prob_hazard_calc(train_input, "Categorized_Relative_Vel", "Sl
 p_fast, pop_fast = prob_hazard_calc(train_input, "Categorized_Relative_Vel", "Fast")
 # print(p_fast, pop_fast)
 
-print("\n\nPrinting Chances of Relative Velocity Objects given they are hazardous:\n")
-print("{} Slow Relative Velocity objects had {} chances of being hazardous".format(pop_slow, p_slow))
-print("{} Fast Relative Velocity objects had {} chances of being hazardous".format(pop_fast, p_fast))
+# print("\n\nPrinting Chances of Relative Velocity Objects given they are hazardous:\n")
+# print("{} Slow Relative Velocity objects had {} chances of being hazardous".format(pop_slow, p_slow))
+# print("{} Fast Relative Velocity objects had {} chances of being hazardous".format(pop_fast, p_fast))
 
 # For Miss Distance:
 
@@ -108,10 +108,10 @@ p_med, pop_med = prob_hazard_calc(train_input, "Categorised_Miss_Distance", "Med
 p_more, pop_more = prob_hazard_calc(train_input, "Categorised_Miss_Distance", "More")
 # print(p_more, pop_more)
 
-print("\n\nPrinting Chances of Miss Distance Objects given they are hazardous:\n")
-print("{} Less Miss Distance objects had {} chances of being hazardous".format(pop_less, p_less))
-print("{} Medium Miss Distance objects had {} chances of being hazardous".format(pop_med, p_med))
-print("{} More Miss Distance objects had {} chances of being hazardous".format(pop_more, p_more))
+# print("\n\nPrinting Chances of Miss Distance Objects given they are hazardous:\n")
+# print("{} Less Miss Distance objects had {} chances of being hazardous".format(pop_less, p_less))
+# print("{} Medium Miss Distance objects had {} chances of being hazardous".format(pop_med, p_med))
+# print("{} More Miss Distance objects had {} chances of being hazardous".format(pop_more, p_more))
 
 # Implementing Baysian Interference:
 
@@ -203,22 +203,22 @@ def eval_qbn(model, prepare_data, data):
         results['10'] / (results['10'] + results['00'])
     )
 
-print(eval_qbn(qbn, lambda dataset: list(filter(lambda item: item[1] is not None ,dataset)), data))
+# print(eval_qbn(qbn, lambda dataset: list(filter(lambda item: item[1] is not None ,dataset)), data))
 
-# Calculate the log‐likelihood when filling in 0
-print(eval_qbn(qbn, lambda dataset: list(map(lambda item: item if item[1] is not None else (item[0], 0) ,dataset)), data))
+# # Calculate the log‐likelihood when filling in 0
+# print(eval_qbn(qbn, lambda dataset: list(map(lambda item: item if item[1] is not None else (item[0], 0) ,dataset)), data))
 
-# Evaluating the guess
-print(eval_qbn(qbn, lambda dataset: list(map(lambda item: item if item[1] is not None else (item[0], 0.5) ,dataset)), data))
+# # Evaluating the guess
+# print(eval_qbn(qbn, lambda dataset: list(map(lambda item: item if item[1] is not None else (item[0], 0.5) ,dataset)), data))
 
-# Refining the model
-print(eval_qbn(qbn, lambda dataset: list(map(lambda item: item if item[1] is not None else (item[0], 0.3) ,dataset)), data))
+# # Refining the model
+# print(eval_qbn(qbn, lambda dataset: list(map(lambda item: item if item[1] is not None else (item[0], 0.3) ,dataset)), data))
 
-# Further refining the model
-print(eval_qbn(qbn, lambda dataset: list(map(lambda item: item if item[1] is not None else (item[0], 0.252) ,dataset)), data))
+# # Further refining the model
+# print(eval_qbn(qbn, lambda dataset: list(map(lambda item: item if item[1] is not None else (item[0], 0.252) ,dataset)), data))
 
-# Another iteration
-print(eval_qbn(qbn, lambda dataset: list(map(lambda item: item if item[1] is not None else (item[0], 0.252) ,dataset)), data))
+# # Another iteration
+# print(eval_qbn(qbn, lambda dataset: list(map(lambda item: item if item[1] is not None else (item[0], 0.252) ,dataset)), data))
 
 # positions of the qubits
 QPOS_dia = 0
@@ -294,9 +294,9 @@ pop_less = train_input[train_input.Categorised_Miss_Distance.eq("Less")]
 hazardous_less =  round(len(pop_less[pop_less.Hazardous.eq(1)])/len(pop_less), 2)
 p_less = round(len(pop_less)/len(train_input), 2)
 
-print("More Miss Distance: {} of the Objects, hazardous: {}".format(p_more , hazardous_more))
-print("Medium Miss Distance: {} of the Objects, hazardous: {}".format(p_med,hazardous_med))
-print("Less Miss Distance: {} of the Objects, hazardous: {}".format(p_less,hazardous_less))
+# print("More Miss Distance: {} of the Objects, hazardous: {}".format(p_more , hazardous_more))
+# print("Medium Miss Distance: {} of the Objects, hazardous: {}".format(p_med,hazardous_med))
+# print("Less Miss Distance: {} of the Objects, hazardous: {}".format(p_less,hazardous_less))
 
 # Listing Represent the miss-distance
 # positions of the qubits
@@ -588,7 +588,7 @@ def train_qbn_neo(objects, params, iterations):
         objects = prepare_data(objects, new_params)
         results = qbn_neo(calculate_norm_params(objects), calculate_hazardous_params(objects), hist=False)
 
-        print ('The log-likelihood after {} iteration(s) is {}'.format(iterations, log_likelihood_neo(objects, results)))
+        # print ('The log-likelihood after {} iteration(s) is {}'.format(iterations, log_likelihood_neo(objects, results)))
         return to_params(results)
     
     return params
@@ -696,8 +696,8 @@ def run(f_classify, data):
 trained_qbn = get_trained_qbn(train_input, trained_params)
 
 # evaluate the Quantum Bayesian Network
-classifier_report("QBN",
-    run,
-    lambda object: post_process(trained_qbn(pre_process(object))),
-    objects,
-    train_input['Hazardous'])
+# classifier_report("QBN",
+#     run,
+#     lambda object: post_process(trained_qbn(pre_process(object))),
+#     objects,
+#     train_input['Hazardous'])

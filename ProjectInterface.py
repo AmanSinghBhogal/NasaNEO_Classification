@@ -1,5 +1,6 @@
 from tkinter import *
-from ClassicalGausianNB_runner import cnb
+from ClassicalGausianNB_runner import *
+# from BaysianInterference import post_process, trained_qbn,pre_process
 
 # Initializing Tkinter application
 app = Tk()
@@ -112,24 +113,29 @@ QResult.place(x=Col3+350,y=Row7)
 
 # Quantum NB Call:
 def hitQNB():
-    QdisplayValue.set(str(True))
+    params = {
+        'p_norm_large_slow_hazardous': 0.45,
+        'p_norm_large_slow_nonhazardous': 0.46,
+        'p_norm_large_fast_hazardous': 0.47,
+        'p_norm_large_fast_nonhazardous': 0.48,
+        'p_norm_small_slow_hazardous': 0.49,
+        'p_norm_small_slow_nonhazardous': 0.51,
+        'p_norm_small_fast_hazardous': 0.52,
+        'p_norm_small_fast_nonhazardous': 0.53,
+    }
+    output = random.randint(0, 1)
+    # QmaxDia = float(QMaxDia.get())
+    # QrelVel = float(QRelVel.get())
+    # QmisDis = float(QMisDis.get())
+    # cat_MaxDia = "Large" if QmaxDia >= max_dia_mean else "Small"
+    # cat_RelVel = "Fast" if QrelVel >= Rv_mean else "Slow"
+    # cat_MisDis = "Less" if QmisDis >= 0 and QmisDis < 25000000 else ("Medium" if QmisDis>= 25000000 and QmisDis<50000000 else "More")
+    # test_record = pd.DataFrame(list(zip(QmaxDia, QrelVel, QmisDis, cat_MaxDia, cat_RelVel, cat_MisDis, "True")), columns=['Max_Diameter','Relative_Velocity','Miss_Distance', 'Categorized_Diameter', 'Categorized_Relative_Vel','Categorised_Miss_Distance','Hazardous'])
+    # print(test_record.iloc[0])
+    QdisplayValue.set(str(bool(output)))
 
 appQNB7 = Button(app, text="Submit", command=hitQNB, font=("MV Boli",16),justify="center",fg="white", bg="black", highlightcolor="grey")
 appQNB7.place(x=Col3+250, y=Row6)
-
-# Quantum NB Call:
-# Listing Initialize the parameters
-# Step 0: Initialize the parameter values
-params = {
-    'p_norm_large_slow_hazardous': 0.45,
-    'p_norm_large_slow_nonhazardous': 0.46,
-    'p_norm_large_fast_hazardous': 0.47,
-    'p_norm_large_fast_nonhazardous': 0.48,
-    'p_norm_small_slow_hazardous': 0.49,
-    'p_norm_small_slow_nonhazardous': 0.51,
-    'p_norm_small_fast_hazardous': 0.52,
-    'p_norm_small_fast_nonhazardous': 0.53,
-}
 
 
 app.mainloop()
