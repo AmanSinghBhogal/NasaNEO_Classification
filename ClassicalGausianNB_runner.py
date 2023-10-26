@@ -23,19 +23,19 @@ data = data.drop("id", axis = 1)
 train_input, test_input = train_test_split(data, test_size=0.3, random_state=0)
 
 # Printing the Number of True and False Records in Train and Test Dataset
-print("Train Dataset: No of True: {}, No. False: {}".format(len(train_input[train_input['hazardous'] == True]), len(train_input[train_input['hazardous'] == False])))
-print("Test Dataset: No of True: {}, No. False: {}".format(len(test_input[test_input['hazardous'] == True]), len(test_input[test_input['hazardous'] == False])))
+# print("Train Dataset: No of True: {}, No. False: {}".format(len(train_input[train_input['hazardous'] == True]), len(train_input[train_input['hazardous'] == False])))
+# print("Test Dataset: No of True: {}, No. False: {}".format(len(test_input[test_input['hazardous'] == True]), len(test_input[test_input['hazardous'] == False])))
 
 # Printing Number of records in training and testing
-print("There are {} Training Records and {} Testing Records".format(train_input.shape[0], test_input.shape[0]))
+# print("There are {} Training Records and {} Testing Records".format(train_input.shape[0], test_input.shape[0]))
 
 # Calculating Probability of Hazardious true And false
 p_hazard_true = len(train_input[train_input['hazardous'] == True])/len(train_input)
 p_hazard_false = len(train_input[train_input['hazardous'] == False])/len(train_input)
 
 # Printing the target class probility
-print("P[True]: {:.3f}".format(p_hazard_true))
-print("P[False]: {:.3f}".format(p_hazard_false))
+# print("P[True]: {:.3f}".format(p_hazard_true))
+# print("P[False]: {:.3f}".format(p_hazard_false))
 
 # Calculating probabilities for Hazardous = True
 row1 = []
@@ -81,11 +81,10 @@ def post_prob(mean, var, input_x):
 def cnb(input):
     # Post_T = (p_hazard_true*def()*)
     Post_T = p_hazard_true
-    Post_F = p_hazard_false 
-    
+    Post_F = p_hazard_false
     # print("For Hazardous = True")
     # Calculating Posterior Probability for Hazardous = True
-    for i in range(5):
+    for i in range(len(input)-1):
         t1 = i*2
         t2 = t1+1
         val = post_prob(calculated_fields.iloc[0,t1],calculated_fields.iloc[0,t2], input[i])
@@ -95,7 +94,7 @@ def cnb(input):
     
     # print("For hazardous = False")
     # Calculating Posterior Probability for Hazardous = False
-    for i in range(5):
+    for i in range(len(input)-1):
         t1 = i*2
         t2 = t1+1
         val = post_prob(calculated_fields.iloc[1,t1],calculated_fields.iloc[1,t2], input[i])
@@ -124,8 +123,9 @@ actual_outputs = test_input['hazardous']
 
 predicted_outputs = []
 
-for i in range(len(test_input)):
-    predicted_outputs.append(cnb(test_input.iloc[i].values.flatten().tolist()))
+# print(test_input.iloc[0])
+# for i in range(len(test_input)):
+#     predicted_outputs.append(cnb(test_input.iloc[i].values.flatten().tolist()))
 
 # Creating Classifier Report function
 def classifier_report():
@@ -155,13 +155,13 @@ def classifier_report():
     print('The information level is: {:.2f}'
         .format(cr_level))
     
-classifier_report()
+# classifier_report()
 
-# Visualisation
-correlation = train_input.corr()
+# # Visualisation
+# correlation = train_input.corr()
 
-# plot the heatmap
-samandar.heatmap(correlation, xticklabels = correlation.columns, yticklabels = correlation.columns, annot=True)
+# # plot the heatmap
+# samandar.heatmap(correlation, xticklabels = correlation.columns, yticklabels = correlation.columns, annot=True)
 
-# plot the clustermap
-samandar.clustermap(correlation, xticklabels = correlation.columns, yticklabels = correlation.columns, annot=True)
+# # plot the clustermap
+# samandar.clustermap(correlation, xticklabels = correlation.columns, yticklabels = correlation.columns, annot=True)
