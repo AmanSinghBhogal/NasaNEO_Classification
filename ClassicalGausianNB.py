@@ -81,10 +81,11 @@ def post_prob(mean, var, input_x):
 def cnb(input):
     # Post_T = (p_hazard_true*def()*)
     Post_T = p_hazard_true
-    Post_F = p_hazard_false
+    Post_F = p_hazard_false 
+    
     # print("For Hazardous = True")
     # Calculating Posterior Probability for Hazardous = True
-    for i in range(len(input)-1):
+    for i in range(5):
         t1 = i*2
         t2 = t1+1
         val = post_prob(calculated_fields.iloc[0,t1],calculated_fields.iloc[0,t2], input[i])
@@ -94,7 +95,7 @@ def cnb(input):
     
     # print("For hazardous = False")
     # Calculating Posterior Probability for Hazardous = False
-    for i in range(len(input)-1):
+    for i in range(5):
         t1 = i*2
         t2 = t1+1
         val = post_prob(calculated_fields.iloc[1,t1],calculated_fields.iloc[1,t2], input[i])
